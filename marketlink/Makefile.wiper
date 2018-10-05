@@ -1,0 +1,23 @@
+# $Id: $
+
+MODULE := mklwiper 
+
+
+DEPENDS :=	\
+	LIBUTIL	\
+	LIBAPPS	\
+	LIBRMDS
+
+
+SOURCES := \
+	PageWiperApp.cpp	\
+	MKLMsg.cpp	\
+	WiperFeedSession.cpp
+
+
+#LIBRARIES += -lrtc 
+#LIBRARIES = 
+OBJECTS := $(SOURCES:.cpp=.o)
+
+include $(BASE_DIR)/make/common.mk
+

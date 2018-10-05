@@ -1,0 +1,191 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.5
+date	2005.03.29.16.05.55;	author mikhailt;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2004.04.29.19.52.56;	author mikhailt;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.04.28.16.23.53;	author mikhailt;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.04.13.19.58.41;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@static ConfigMap
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2004/04/29 19:52:56 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/ConfigMap.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: ConfigMap.hpp,v 1.4 2004/04/29 19:52:56 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.4 $
+|| LOG:                 $Log: ConfigMap.hpp,v $
+|| LOG:                 Revision 1.4  2004/04/29 19:52:56  mikhailt
+|| LOG:                 migration to SUNPRO
+|| LOG:
+|| LOG:                 Revision 1.3  2004/04/28 16:23:53  mikhailt
+|| LOG:                 no changes, some include
+|| LOG:
+|| LOG:                 Revision 1.2  2004/04/13 19:58:41  mikhailt
+|| LOG:                 reads from the http
+|| LOG:
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+
+#ifndef CONFIGMAP_HPP
+#define CONFIGMAP_HPP
+
+#include <iostream.h>
+#include <string>
+#include <map>
+#include <fstream>
+
+using std::string;
+using std::map;
+using std::ifstream;
+
+class Application;
+
+class ConfigMap
+{
+	public:
+		typedef bool (*UrlLoader)(string url, ConfigMap *conf);
+	public:
+		ConfigMap( const Application *app);
+		virtual ~ConfigMap();
+		virtual const string&  getValue(const char * key)const;
+		virtual bool insertPair(string key, string val);
+		virtual void loadCommandLine(int argc, char ** argv);
+		virtual bool loadUrl(string& url_type, string& url);
+		virtual map<string, string>::const_iterator begin() const{
+			return _configs.begin();
+		}
+
+		virtual map<string, string>::const_iterator end() const{
+			return _configs.end();
+		}
+		static ConfigMap* getConfig();
+		static void setConfig(ConfigMap* cm);
+	protected:
+		static bool loadFileUrl(string filename, ConfigMap *);
+		static bool loadHttpUrl(string url, ConfigMap *);
+
+		virtual bool doGetToConfig(int fd, string& getstr);
+		virtual void parseToConfig(ifstream& is);
+		static ConfigMap* _config;
+	private:
+		map<string, string> _configs;
+		map<string, UrlLoader> _urlLoaders;
+		const Application * _myApp;
+
+};
+#endif//CONFIGMAP_HPP
+@
+
+
+1.4
+log
+@migration to SUNPRO
+@
+text
+@d6 1
+a6 1
+|| DATE:                $Date: 2004/04/28 16:23:53 $
+d9 2
+a10 2
+|| ID:                  $Id: ConfigMap.hpp,v 1.3 2004/04/28 16:23:53 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.3 $
+d12 3
+d59 2
+a60 1
+
+d67 1
+a67 1
+
+@
+
+
+1.3
+log
+@no changes, some include
+@
+text
+@d6 1
+a6 1
+|| DATE:                $Date: 2004/04/13 19:58:41 $
+d9 2
+a10 2
+|| ID:                  $Id: ConfigMap.hpp,v 1.2 2004/04/13 19:58:41 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.2 $
+d12 3
+d27 1
+d32 4
+@
+
+
+1.2
+log
+@reads from the http
+@
+text
+@d5 2
+a6 2
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+d9 2
+a10 2
+|| ID:                  $Id: ConfigMap.hpp,v 1.1 2004/01/08 20:51:46 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+d12 3
+d26 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d47 5
+a51 1
+		static bool loadHttpUrl(string url, ConfigMap *){ return false;};
+@

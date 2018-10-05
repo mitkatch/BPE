@@ -1,0 +1,188 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.4
+date	2004.10.20.19.48.24;	author mikhailt;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.09.23.17.58.24;	author mikhailt;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.04.29.19.52.56;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@PageParser compatible
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2004/09/23 17:58:24 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/DataCache.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: DataCache.hpp,v 1.3 2004/09/23 17:58:24 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.3 $
+|| LOG:                 $Log: DataCache.hpp,v $
+|| LOG:                 Revision 1.3  2004/09/23 17:58:24  mikhailt
+|| LOG:                 using Datum
+|| LOG:
+|| LOG:                 Revision 1.2  2004/04/29 19:52:56  mikhailt
+|| LOG:                 migration to SUNPRO
+|| LOG:
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+
+#ifndef DATACACHE_HPP
+#define DATACACHE_HPP
+
+//#include "DataGraph.hpp"
+#include "Datum.hpp"
+#include <iostream.h>
+#include <map>
+#include <vector>
+#include <set>
+
+using std::map;
+using std::vector;
+using std::set;
+
+class DataCache
+{
+	public:
+		virtual ~DataCache();
+		static DataCache* getCache();
+		
+		virtual void subscribe(string& address, Subscriber *subscriber, int datum );
+		virtual void subscribePortfolio(vector<string> &tickers, Subscriber *subscriber );
+		virtual void unsubscribe(string& address, Subscriber *subscriber );
+		virtual bool setSubscriberByWCard(Subscriber *subscriber, const string& card);
+		virtual Subscriber * getSubscriberByWCard(const string& card);
+
+		virtual Datum * getData(string& address, int datum); 
+		virtual void setPersistent(bool p){
+			_persistent = p;
+		}
+		virtual bool getPersistent(){
+			return _persistent;
+		}
+		virtual int removePortfolio(Datum *data, Subscriber *subscriber);
+		virtual bool addDatum(const string& address, int type);
+		virtual Datum* removeDatum(const string& address);
+		virtual bool deleteDatum(const string& address);
+		virtual Datum * getDatum(const string& address);
+		virtual void getDataClone(const std::string &, Datum*);
+
+		virtual set<string> getAddressSet();
+
+	protected:
+		static DataCache * _theCache;
+		DataCache();
+		bool _persistent;
+		map <string, Datum*> _mapCache;
+		map<Subscriber *, vector<Datum *> > _portfolioHolder;
+		map<string, Subscriber *> _wcardSubscriberMap;
+	private:
+
+		pthread_mutex_t m_dMutex;
+		pthread_mutex_t m_sMutex;
+};
+
+
+
+
+#endif //DATACACHE_HPP
+@
+
+
+1.3
+log
+@using Datum
+@
+text
+@d6 1
+a6 1
+|| DATE:                $Date: 2004/04/29 19:52:56 $
+d9 2
+a10 2
+|| ID:                  $Id: DataCache.hpp,v 1.2 2004/04/29 19:52:56 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.2 $
+d12 3
+d32 1
+d36 1
+d47 3
+d58 7
+d72 5
+@
+
+
+1.2
+log
+@migration to SUNPRO
+@
+text
+@d5 2
+a6 2
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+d9 2
+a10 2
+|| ID:                  $Id: DataCache.hpp,v 1.1 2004/01/08 20:51:46 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+d12 3
+d24 2
+a25 1
+#include "DataGraph.hpp"
+d39 1
+a39 1
+		virtual void subscribe(string& address, Subscriber *subscriber );
+d42 1
+a42 1
+		virtual DataGraph * getData(string& address); 
+d49 1
+a49 1
+		virtual int removePortfolio(DataGraph *data, Subscriber *subscriber);
+d55 2
+a56 2
+		map <string, DataGraph*> _mapCache;
+		map<Subscriber *, vector<DataGraph *> > _portfolioHolder;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d22 6
+@

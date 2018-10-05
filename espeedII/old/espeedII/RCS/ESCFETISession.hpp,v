@@ -1,0 +1,76 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2005.11.17.21.57.58;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+************************************************************************/
+
+#ifndef ESCFETISESSION_HPP
+#define ESCFETISESSION_HPP 
+#include <vector>
+#include "Runnable.hpp"
+#include "ConfigMap.hpp"
+#include "ESCFETIProcessor.hpp"
+
+using std::vector;
+
+class ESCFETISession: public Runnable
+{
+	public:
+		ESCFETISession(const ConfigMap& configMap);
+		virtual ~ESCFETISession();
+		virtual long Run();
+		static void shutdown();
+
+		static ESCFETISession *getMySession();
+		static void SigHandler(int sig);
+		static void activated(bool status);
+		static bool activated();
+	protected:
+
+
+		static void freeInstArray();
+	protected:
+		friend ESCFETIProcessor;
+		static ESCFETISession* _mySession;
+		static char* currentSession;
+		static unsigned int room;
+		static unsigned int code;
+		static bool isQueryDone;
+		static char** instArray;
+		static int numInstruments;
+		static CFETI_TRADE_SESS_ID currentTradingSession;
+		static bool _activated;
+		static char*  _username;
+		static char*  _password;
+		static char*  _primary;
+		static char*  _secondary;
+};
+#endif // ESCFETISESSION_HPP
+@

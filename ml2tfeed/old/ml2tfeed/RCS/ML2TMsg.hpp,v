@@ -1,0 +1,108 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2006.05.12.15.58.17;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2006.04.07.19.31.50;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@switch to BLOCKing mode
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2006/04/07 19:31:50 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/ml2tfeed/RCS/ML2TMsg.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: ML2TMsg.hpp,v 1.1 2006/04/07 19:31:50 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: ML2TMsg.hpp,v $
+|| LOG:                 Revision 1.1  2006/04/07 19:31:50  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef ML2TMSG_HPP
+#define ML2TMSG_HPP
+
+#include <vector>
+#include "DataPage.hpp"
+using namespace std;
+
+class ML2TMsg
+{
+	public:
+		ML2TMsg():p_msg(NULL), _msgID(0L){};
+		virtual ~ML2TMsg();
+		ML2TMsg(const ML2TMsg& msg);
+		virtual void push_back(char ch);
+		virtual void push_back(const string& str);
+		virtual void push_back(unsigned char ch);
+		virtual void push_back(DataPage::PageRow& row);
+		virtual void push_back(const ML2TMsg& msg);
+
+		virtual char* getMsg();
+
+		virtual vector<char> getMsgAsVector()const{
+			return v_msg;
+		}
+
+		virtual int size() const{
+			return v_msg.size();
+		}
+
+		virtual void msgID(unsigned long id){
+			_msgID = id;
+		}
+
+		virtual unsigned long msgID(){
+			return _msgID;
+		}
+			
+	protected:
+		char * p_msg;
+		vector<char> v_msg;
+		unsigned long _msgID;
+
+};
+
+#endif //ML2TMSG_HPP
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d27 1
+a27 1
+		ML2TMsg():p_msg(NULL){};
+d46 8
+d57 1
+@

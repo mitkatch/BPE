@@ -1,0 +1,108 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2004.04.28.16.25.14;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@change string to const string
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/MessageFactory.cpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: MessageFactory.cpp,v 1.1 2004/01/08 20:51:46 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: MessageFactory.cpp,v $
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+
+#include "MessageFactory.hpp"
+
+MessageFactory* MessageFactory::_factory = NULL;
+
+MessageFactory::MessageFactory()
+{
+
+}
+
+MessageFactory::~MessageFactory()
+{
+
+}
+
+MessageFactory *
+MessageFactory::getFactory()
+{
+	if (_factory == NULL){
+		_factory = new MessageFactory;
+	}
+	return _factory;
+}
+
+void
+MessageFactory::processMsg(string &msgType, MsgGraph& image, MsgProcessor *proc)
+{
+	map<string, MsgHandler>::const_iterator it = _handlers.find(msgType);
+	if (it == _handlers.end()){
+		proc->defaultMsgType(msgType, image);
+	} else {
+		(*it->second)(image,proc);
+	}
+}
+
+bool
+MessageFactory::registerMsgHandler(const string& msgType, MsgHandler handler)
+{
+	return _handlers.insert(map<string, MsgHandler>::value_type(msgType, handler)).second;
+
+}
+
+bool
+MessageFactory::unregisterMsgHandler(string msgType)
+{
+	return _handlers.erase(msgType) == 1;
+}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d53 1
+a53 1
+MessageFactory::registerMsgHandler(string msgType, MsgHandler handler)
+@

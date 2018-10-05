@@ -1,0 +1,84 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2004.08.09.21.00.10;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.07.30.16.16.06;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@INTERVAL added
+@
+text
+@/************************************************************************
+||
+|| DATE:                $Date: 2004/07/30 16:16:06 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/HeartbeatSession.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: HeartbeatSession.hpp,v 1.1 2004/07/30 16:16:06 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: HeartbeatSession.hpp,v $
+|| LOG:                 Revision 1.1  2004/07/30 16:16:06  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef HEARTBEATSESSION_HPP 
+#define HEARTBEATSESSION_HPP 
+
+#include "TimerCallback.hpp"
+#include "UDPSession.hpp"
+#include "ConfigMap.hpp"
+#include "Scheduler.hpp"
+
+class HeartbeatSession: public UDPSession, public TimerCallback
+{
+	public:
+		HeartbeatSession(const ConfigMap &confmap);
+		virtual ~HeartbeatSession();
+
+		virtual bool initSession();
+		//virtual void initHeartbeatSession();
+	protected:
+		virtual void onTimer(TimerId id);
+
+	private:
+		int _heartbeat;
+		string _interval;
+		string _p_host;
+		string _pid;
+};
+#endif // HEARTBEATSESSION_HPP
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 10
+a13 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d37 1
+@

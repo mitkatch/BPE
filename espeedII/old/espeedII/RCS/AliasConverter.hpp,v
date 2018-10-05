@@ -1,0 +1,89 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2006.03.28.20.44.10;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2005.11.17.21.57.58;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@processProv
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2005/11/17 21:57:58 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/espeedII/RCS/AliasConverter.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: AliasConverter.hpp,v 1.1 2005/11/17 21:57:58 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: AliasConverter.hpp,v $
+|| LOG:                 Revision 1.1  2005/11/17 21:57:58  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef ALIASCONVERTER_HPP
+#define ALIASCONVERTER_HPP
+
+#include <map>
+#include <string>
+#include <set>
+#include "MsgGraph.hpp"
+
+using std::map;
+using std::set;
+using std::string;
+
+class AliasConverter
+{
+	public:
+		static AliasConverter* getConverter();
+		virtual ~AliasConverter();
+		virtual void load(const string& url, const string& search);
+		virtual string getAlias(const string& label);
+	protected:
+		static AliasConverter* _myConverter;
+		AliasConverter();
+		void processAliases(MsgGraph *rset);
+		string processProv(const string& label);
+		bool addAlias(const string& aliasUrl, const string& rec);
+		map<string, string> _aliasMap;	
+
+};
+
+#endif //ALIASCONVERTER_HPP
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d40 1
+@

@@ -1,0 +1,87 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2004.04.28.16.25.14;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@change string to const string
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/MessageFactory.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: MessageFactory.hpp,v 1.1 2004/01/08 20:51:46 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: MessageFactory.hpp,v $
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef MESSAGEFACTORY_HPP
+#define MESSAGEFACTORY_HPP
+
+#include "MsgProcessor.hpp"
+#include "MsgGraph.hpp"
+
+class MessageFactory
+{
+	public:
+		typedef bool (*MsgHandler)(MsgGraph &image, MsgProcessor *processor); 
+	public:
+		virtual ~MessageFactory();
+		static MessageFactory * getFactory();
+		virtual void processMsg(string& msgType, MsgGraph& image, MsgProcessor *proc);
+		virtual bool registerMsgHandler(const string& msgType, MsgHandler handler);
+		virtual bool unregisterMsgHandler(string msgType);
+	
+	protected:
+		static MessageFactory* _factory;
+		MessageFactory();
+		map<string, MsgHandler> _handlers;
+		
+
+};
+ 
+#endif //MESSAGEFACTORY_HPP
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d31 1
+a31 1
+		virtual bool registerMsgHandler(string msgType, MsgHandler handler);
+@

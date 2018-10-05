@@ -1,0 +1,156 @@
+
+/************************************************************************
+||
+|| DATE:                $Date: 2006/04/07 19:31:50 $
+|| SOURCE:              $Source: /export/home/tomcat/mlsrc/ml2tfeed/RCS/GRecordProducer.cpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: GRecordProducer.cpp,v 1.1 2006/04/07 19:31:50 mikhailt Exp $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: GRecordProducer.cpp,v $
+|| LOG:                 Revision 1.1  2006/04/07 19:31:50  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <signal.h>
+#include <ctype.h>
+#include <strings.h>
+
+#include <unistd.h>
+#include<iostream>
+#include<fstream>
+
+
+#include "Logger.hpp"
+#include "GRecordProducer.hpp"
+
+
+GRecordProducer::GRecordProducer(const ConfigMap &configMap):_publisher(NULL)
+{
+	string port = configMap.getValue("GATEWAY_PORT");
+	_ip = configMap.getValue("GATEWAY_IP");
+	_port = atoi(port.c_str());
+	
+
+}
+
+GRecordProducer::~GRecordProducer()
+{
+	if (_publisher)
+		delete _publisher;
+
+}
+
+
+int
+GRecordProducer::init()
+{
+	//connect to IP, port
+	int flags, n, error;
+	int len;
+	int sockfd;
+	struct sockaddr_in servaddr;
+	if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		Logger::getLogger()->log(Logger::TYPE_ERROR, "GRecordProducer::init socket failed");
+		return -1;
+	}
+
+	bzero(&servaddr, sizeof(servaddr));	
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(_port);
+	if (inet_pton(AF_INET, _ip.c_str(), &servaddr.sin_addr) <= 0){
+		Logger::getLogger()->log(Logger::TYPE_ERROR, "GRecordProducer::init inet_pton failed");
+		return -1;
+	}
+	
+	flags = fcntl(sockfd, F_GETFL, 0);
+	fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+	
+	if ( (n = connect(sockfd, (SA *)&servaddr, sizeof(servaddr)) < 0)){
+		Logger::getLogger()->log(Logger::TYPE_ERROR, "GRecordProducer::init inet_pton failed");
+		return -1;
+	}
+
+	if (_publisher == NULL){
+		_publisher = new GRecordProducer::GPublisher(this, sockfd);
+	}
+
+}
+
+void
+GRecordProducer::notify(Datum *datum)
+{
+	if (datum){
+		DataGraph *data = dynamic_cast<DataGraph *>(datum);
+		if (data){
+			string header = "<ML>\n<METHODCALL methodname=\"conveyUpdate\" >\n<REC address=\"";
+			header += data->address();
+			header += "\" >";
+			string footer = "</REC>\n</METHODCALL>\n</ML>";
+			set<string> setf = data->getFieldSet();
+			set<string>::iterator its = setf.begin();
+			for (its; its != setf.end(); its++){ 
+				string f = (*its);
+				this->setSubscribedFields(data->address(), f, f);
+			}
+			this->setHeaderFooter(data->address(), header, footer);
+			string str = data->toXmlString(this);
+			this->publish(str);
+		}
+	}
+}
+
+void
+GRecordProducer::onTimer(TimerId id)
+{
+	//if connection failed try to establish it
+
+}
+
+void
+GRecordProducer::publish(const string& str)
+{
+	if (_publisher)
+		_publisher->publish(str);
+
+}
+
+GRecordProducer::GPublisher::GPublisher(GRecordProducer *producer, int fd):_producer(producer), _fd(fd)
+{
+
+}
+
+GRecordProducer::GPublisher::~GPublisher()
+{
+
+}
+
+void
+GRecordProducer::GPublisher::publish(const string& str)
+{
+	 _publishStr += str;
+	cout<<"GPublisher::publish ["<<_publishStr<<"]"<<endl;
+	newIO(_fd, IOCallback::IO_WRITE, this);
+}
+void
+GRecordProducer::GPublisher::onWrite(int fd, InputId id)
+{
+	if (fd == _fd){
+		int n = 0;
+		int len = (1500 >_publishStr.size()? _publishStr.size(): 1500);
+		n = send(fd, _publishStr.c_str(), len, 0);
+		 _publishStr.erase(0, n );
+		
+		if (_publishStr.empty()){
+			this->removeIO(fd);
+		} else {
+			newIO(_fd, IOCallback::IO_WRITE, this);
+		}
+	}
+}
+

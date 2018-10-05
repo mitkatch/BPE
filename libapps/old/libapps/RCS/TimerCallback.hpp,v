@@ -1,0 +1,99 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2004.07.30.16.16.06;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@sends correct heartbeats
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/TimerCallback.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: TimerCallback.hpp,v 1.1 2004/01/08 20:51:46 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: TimerCallback.hpp,v $
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+
+#ifndef TIMERCALLBACK_HPP
+#define TIMERCALLBACK_HPP
+
+
+#include <assert.h>
+#include "BasicComponent.hpp"
+
+typedef XtIntervalId    TimerId;
+
+class TimerCallback
+{
+	public:
+		static enum {   FOREVER = -1,
+				NONE = 0
+		} tRepeat;
+
+	TimerCallback();
+	virtual ~TimerCallback();
+
+	virtual void addTimer(unsigned long interval, int repeat, TimerCallback *);
+	
+	protected:
+
+		virtual void removeTimer ( TimerId timer);
+		static void regTimerCallback(XtPointer clientData, TimerId *timer);
+		virtual void onTimer(TimerId id){
+			cout<<"TimerCallback not implemented "<<endl;
+		}
+
+
+		int             _repeat;
+		TimerId         _timer;
+		unsigned long   _interval;
+};
+
+#endif //TIMERCALLBACK_HPP
+			
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 10
+a14 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d43 3
+a45 1
+		virtual void onTimer(TimerId id)= 0;
+@

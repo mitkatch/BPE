@@ -1,0 +1,468 @@
+dn: page=3110PROV, ou=PageBuilder, o=moneyline.ca
+pageName: 3110,3111,3112,3113,3114,3115,3116,3117,3118,3119,3120
+pageType: dynamic
+objectClass: top
+objectClass: pageImage
+page: 3110PROV
+
+dn: rowNum=0, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+rowNum: 0
+objectClass: top
+objectClass: pageRow
+
+dn: colNum=0,rowNum=0, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 0
+cValue: - = AUTO PROV CANPX II = -
+cY: 0
+cX: 30
+cAlignment: 1
+cVideo: video://HIGHLIGHT
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 26
+cBg: 0
+
+dn: rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+rowNum: 1
+objectClass: top
+objectClass: pageRow
+
+dn: colNum=1,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+cX: 0
+cLength: 9
+cAlignment: 1
+colNum: 1
+objectClass: top
+objectClass: pageColumn
+cVideo: 0
+cValue: ISSUE
+cY: 1
+
+dn: colNum=2,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+cX: 10
+cLength: 7
+cAlignment: 2
+colNum: 2
+objectClass: top
+objectClass: pageColumn
+cValue: BID
+cY: 1
+
+dn: colNum=3,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 3
+cValue:  
+cY: 1
+cX: 17
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=4,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 4
+cValue: ASK
+cY: 1
+cX: 20
+cAlignment: 1
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=5,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 5
+cValue: BSIZ
+cY: 1
+cX: 25
+cAlignment: 2
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 5
+cBg: 0
+
+dn: colNum=6,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 6
+cValue:  
+cY: 1
+cX: 30
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 1
+cBg: 0
+
+dn: colNum=7,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 7
+cValue: ASIZ
+cY: 1
+cX: 31
+cAlignment: 1
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 4
+cBg: 0
+
+dn: colNum=8,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 8
+cValue: BMARK
+cY: 1
+cX: 35
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 8
+cBg: 0
+
+dn: colNum=9,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 9
+cValue: BCHG
+cY: 1
+cX: 47
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 4
+cBg: 0
+
+dn: colNum=10,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 10
+cValue: YCHG
+cY: 1
+cX: 49
+cAlignment: 2
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 0
+cBg: 0
+
+dn: colNum=11,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 11
+cValue: LTRADE
+cY: 1
+cX: 56
+cAlignment: 1
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 8
+cBg: 0
+
+dn: colNum=12,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 12
+cValue: SIZ
+cY: 1
+cX: 65
+cAlignment: 2
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 4
+cBg: 0
+
+dn: colNum=13,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 13
+cValue: TIME
+cY: 1
+cX: 70
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 4
+cBg: 0
+
+dn: colNum=14,rowNum=1, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 14
+cValue: AVOL
+cY: 1
+cX: 75
+cAlignment: 2
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 4
+cBg: 0
+
+dn: rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+feedSource: chain://producer=canpx2, ou=Chain, o=moneyline.ca
+rowNum: 2
+objectClass: top
+objectClass: pageRow
+
+dn: colNum=1,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+cLength: 12
+cX: 0
+cAlignment: 2
+colNum: 1
+objectClass: top
+objectClass: pageColumn
+cValue: rec://DESC@feedSource
+cY: 2
+
+dn: colNum=2,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+cX: 14
+cLength: 0
+cFormat: HANDLER_DD
+cAlignment: 2
+colNum: 2
+objectClass: top
+objectClass: pageColumn
+cValue: rec://cFormat[BID|ASK]@feedSource
+cY: 2
+
+dn: colNum=3,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 3
+cValue: rec://cFormat[TRADE_PRICE@TRADE_TONE=H|BID]@feedSource
+cY: 2
+cX: 14
+cAlignment: 0
+cVideo: video://NONE|BLINK@TRADE_TONE=H
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_CND
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=4,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 4
+cValue:  / 
+cY: 2
+cX: 17
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=5,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 5
+cValue: rec://cFormat[TRADE_PRICE@TRADE_TONE=T|ASK]@feedSource
+cY: 2
+cX: 20
+cAlignment: 0
+cVideo: video://NONE|BLINK@TRADE_TONE=T
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_CND
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=6,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 6
+cValue: rec://cFormat[TRADE_SIZE@TRADE_TONE=H|BID_SIZE]@feedSource
+cY: 2
+cX: 27
+cAlignment: 2
+cVideo: video://NONE|BLINK@TRADE_TONE=H
+objectClass: top
+objectClass: pageColumn
+cFormat: HANDLER_COLLECTED@TRADE_PRICE
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=7,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 7
+cValue: x
+cY: 2
+cX: 30
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 1
+cBg: 0
+
+dn: colNum=8,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 8
+cValue: rec://cFormat[TRADE_SIZE@TRADE_TONE=T|ASK_SIZE]@feedSource
+cY: 2
+cX: 31
+cAlignment: 1
+cVideo: video://NONE|BLINK@TRADE_TONE=T
+objectClass: top
+objectClass: pageColumn
+cFormat: HANDLER_COLLECTED@TRADE_PRICE
+cFg: 0
+cLength: 3
+cBg: 0
+
+dn: colNum=9,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 9
+cValue: rec://BENCHMARK@feedSource
+cY: 2
+cX: 34
+cAlignment: 2
+cVideo: 0
+cFormat: ___
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 8
+cBg: 0
+
+dn: colNum=10,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 10
+cValue: rec://cFormat[TRADE_YIELD@TRADE_TONE=H|BID_YIELD]@feedSource
+cY: 2
+cX: 35
+cAlignment: 1
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_CND
+cLength: 0
+cBg: 0
+
+dn: colNum=11,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 11
+cValue: / 
+cY: 2
+cX: 38
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 0
+cBg: 0
+
+dn: colNum=12,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 12
+cValue: rec://cFormat[TRADE_YIELD@TRADE_TONE=T|ASK_YIELD]@feedSource
+cY: 2
+cX: 39
+cAlignment: 1
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_CND
+cLength: 3
+cBg: 0
+
+dn: colNum=13,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 13
+cValue: rec://cFormat[BID_CHG]@feedSource
+cY: 2
+cX: 47
+cAlignment: 2
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_SIGN
+cFg: 0
+cLength: 5
+cBg: 0
+
+dn: colNum=14,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 14
+cValue: rec://cFormat[BID_YIELD_CHG]@feedSource
+cY: 2
+cX: 49
+cAlignment: 2
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: FRACTION_SIGN
+cLength: 0
+cBg: 0
+
+dn: colNum=15,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 15
+cValue: rec://LAST_TRADE_TONE@feedSource
+cY: 2
+cX: 55
+cAlignment: 0
+cVideo: 0
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 1
+cBg: 0
+
+dn: colNum=16,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 16
+cValue: rec://cFormat[LAST_TRADE_PRICE]@feedSource
+cY: 2
+cX: 56
+cAlignment: 2
+cVideo: 0
+cFormat: FRACTION_CND
+objectClass: top
+objectClass: pageColumn
+cFg: 0
+cLength: 7
+cBg: 0
+
+dn: colNum=17,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 17
+cValue: rec://cFormat[LAST_TRADE_SIZE]@feedSource
+cY: 2
+cX: 64
+cAlignment: 2
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: HANDLER
+cLength: 4
+cBg: 0
+
+dn: colNum=18,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 18
+cValue: rec://cFormat[LAST_TRADE_TIME_END]@feedSource
+cY: 2
+cX: 69
+cAlignment: 0
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: TODAYTIME
+cLength: 5
+cBg: 0
+
+dn: colNum=19,rowNum=2, page=3110PROV, ou=PageBuilder, o=moneyline.ca
+colNum: 19
+cValue: rec://cFormat[AVOL]@feedSource
+cY: 2
+cX: 75
+cAlignment: 2
+cVideo: 0
+cFg: 0
+objectClass: top
+objectClass: pageColumn
+cFormat: HANDLER
+cLength: 4
+cBg: 0
+

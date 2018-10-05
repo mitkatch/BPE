@@ -1,0 +1,115 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2005.01.05.17.24.48;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.07.30.16.14.57;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@control mc msg sent
+@
+text
+@/************************************************************************
+||
+|| DATE:                $Date: 2004/07/30 16:14:57 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/ControlSession.cpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: ControlSession.cpp,v 1.1 2004/07/30 16:14:57 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: ControlSession.cpp,v $
+|| LOG:                 Revision 1.1  2004/07/30 16:14:57  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#include "ControlSession.hpp"
+#include "Scheduler.hpp"
+
+ControlSession::ControlSession(const ConfigMap &confmap):UDPSession(confmap)
+{
+	this->setMCIP(confmap.getValue("CONTROL_MULTICAST_GROUP_IP"));
+	this->setMCPort(confmap.getValue("CONTROL_MULTICAST_GROUP_PORT"));
+
+
+}
+
+ControlSession::~ControlSession()
+{
+	if (_publisher)
+		delete _publisher;
+	
+	removeIO(udpSendFd());
+}
+
+bool
+ControlSession::initSession()
+{
+	bool ret = this->initUDP(UDPSession::UDP_PUBLISHER_TYPE | UDPSession::UDP_SUBSCRIBER_TYPE);
+	_publisher = new UDPSessionPublisher(this, udpSendFd());
+
+	return ret;
+}
+
+void
+ControlSession::processUDP(const string& str, const string& line)
+{
+	//MCMsg mcmsg(str);
+}
+
+void
+ControlSession::broadcast(const MCMsg& msg)
+{
+	if (_publisher){
+		MCMsg *newmsg = new MCMsg(msg);
+		if (!newmsg->isKey("TIMESTAMP")){
+			string format = string("%c");
+			string curtime = Scheduler::getCurrentTime(format);
+			//long lcurtime = Scheduler::getTimeLong(curtime, format);
+			//char buf[20];
+			//sprintf(buf, "%d", lcurtime);
+			newmsg->addKeyValue("TIMESTAMP", curtime.c_str()); 
+		}
+		_publisher->publish(newmsg);
+
+	}
+}
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 10
+a13 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d17 1
+d23 1
+a23 1
+	_publisher = new UDPSessionPublisher(this, udpSendFd());
+d39 1
+d50 18
+@

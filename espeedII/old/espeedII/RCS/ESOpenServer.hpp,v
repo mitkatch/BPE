@@ -1,0 +1,65 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2005.11.17.21.57.58;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+************************************************************************/
+
+#ifndef ESOPENSERVER_HPP
+#define ESOPENSERVER_HPP
+
+#include <map>
+#include <string>
+
+#include "OpenServer.hpp"
+#include "ESHttpClient.hpp"
+
+using std::string;
+using std::map;
+
+class ESOpenServer: public OpenServer
+{
+	public:
+		ESOpenServer(const ConfigMap &confMap);
+		virtual ~ESOpenServer();
+		virtual void removeClient(ESHttpClient *cl);
+		virtual string root()const{
+			return _root_ns;
+		}
+	protected:
+
+		virtual void onRead (int fid, InputId id);
+		virtual void onWrite (int fid, InputId id){};
+		virtual void onExcept (int fid, InputId id){};
+		map<int, ESHttpClient *> _mapClients;
+		string _root_ns;
+
+};
+#endif//ESOPENSERVER_HPP
+@

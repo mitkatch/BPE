@@ -1,0 +1,81 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.2
+date	2005.01.05.17.24.48;	author mikhailt;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.07.30.16.16.06;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@control mc msg sent
+@
+text
+@/************************************************************************
+||
+|| DATE:                $Date: 2004/07/30 16:16:06 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/ControlSession.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: ControlSession.hpp,v 1.1 2004/07/30 16:16:06 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.1 $
+|| LOG:                 $Log: ControlSession.hpp,v $
+|| LOG:                 Revision 1.1  2004/07/30 16:16:06  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef CONTROLSESSION_HPP
+#define CONTROLSESSION_HPP
+
+//#include "TimerCallback.hpp"
+#include "UDPSession.hpp"
+#include "MCMsg.hpp"
+
+class ControlSession: public UDPSession
+{
+	public:
+		ControlSession(const ConfigMap &confmap);
+		virtual ~ControlSession();
+	
+		virtual bool initSession();
+		virtual void broadcast(const MCMsg& msg);
+
+	protected:
+		virtual void processUDP(const string& str, const string& line);
+
+	private:
+};
+#endif //CONTROLSESSION_HPP
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 10
+a13 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d21 1
+d30 1
+@

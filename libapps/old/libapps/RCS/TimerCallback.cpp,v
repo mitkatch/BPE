@@ -1,0 +1,87 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+************************************************************************/
+
+
+#include <algorithm>
+#include "TimerCallback.hpp"
+#include "Application.hpp"
+
+TimerCallback::TimerCallback():_timer(0),
+				_repeat(TimerCallback::NONE),
+				_interval(0)
+{
+
+}
+
+
+TimerCallback::~TimerCallback()
+{
+	removeTimer(_timer);
+}
+
+void
+TimerCallback::addTimer(unsigned long interval, int repeat, TimerCallback *tc)
+{
+	//cout<<"addTimer for "<<interval<<", "<<repeat<<endl;
+	if (tc == NULL || repeat == TimerCallback::NONE || interval == 0L)
+		return;
+
+	_repeat = repeat;
+	_interval = interval;
+	_timer = XtAppAddTimeOut(theApplication->appContext(), interval,
+		tc->regTimerCallback, tc);
+}
+
+void
+TimerCallback::removeTimer ( TimerId timer)
+{
+	if (timer)
+		XtRemoveTimeOut(timer);
+}
+
+void //static
+TimerCallback::regTimerCallback(XtPointer clientData, TimerId *id)
+{
+	TimerCallback *tc = (TimerCallback *) clientData;
+	if (tc != NULL){
+		tc->_timer = 0; //reset to 0, if we need to remove pending timer
+		tc->onTimer(*id);
+		if (tc->_repeat ){
+			tc->addTimer(tc->_interval,
+				(tc->_repeat == TimerCallback::FOREVER
+					?tc->_repeat:tc->_repeat -1), tc);
+		}
+	}
+}
+
+@

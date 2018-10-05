@@ -1,0 +1,66 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2006.04.07.19.31.50;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@
+/************************************************************************
+||
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+************************************************************************/
+
+#ifndef ML2TPAGELISTENER_HPP
+#define ML2TPAGELISTENER_HPP
+#include "Subscriber.hpp"
+#include "PageListener.hpp"
+#include "Datum.hpp"
+#include "DataPage.hpp"
+#include "NSMap.hpp"
+#include "ML2TFeedSession.hpp"
+
+class ML2TPageListener: public Subscriber, public PageListener
+{
+	public:
+		ML2TPageListener(ML2TFeedSession* s, const URLNameSpace& ns);
+		virtual ~ML2TPageListener();
+
+		virtual void notify(Datum *datum);
+		virtual void onData(DataPage *page, DataPage::PageSlot slot);
+
+		virtual void setMySlot(const string& slot, const string& id);
+		virtual vector<DataPage::PageSlot> getMySlot()const;
+
+	protected:
+		vector<DataPage::PageSlot> _my_slot;
+		map<DataPage::PageSlot*, string> _mySlotMap;
+		string _address;
+		string _security_id;
+		ML2TFeedSession* _mySession;
+		bool _activated;
+};
+
+
+#endif //ML2TPAGELISTENER_HPP
+@

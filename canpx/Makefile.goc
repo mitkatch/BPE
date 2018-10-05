@@ -1,0 +1,33 @@
+# $Id: Makefile.goc,v 1.4 2006/04/01 12:11:55 nickz Exp $
+
+MODULE := canpx2goc 
+
+DEPENDS :=	\
+	LIBUTIL	\
+	LIBAPPS	\
+	LIBDBLDAPUTIL	\
+	LIBRMDS
+
+
+
+SOURCES := \
+	CanpxApp.cpp	\
+	CanpxOpenServer.cpp	\
+	CanpxHttpClient.cpp	\
+	CanpxContributor.cpp	\
+	CanpxInstrument.cpp	\
+	CanpxAlgorithm.cpp	\
+	CanpxEngineGOCImpl.cpp	\
+	CanpxEngineTBillImpl.cpp	\
+	CanpxEngineProvImpl.cpp	\
+	CanpxEngine.cpp		\
+	CompiledInstrument.cpp	\
+	CanpxTrade.cpp	\
+	ChainManager.cpp
+
+
+LIBRARIES = 
+OBJECTS := $(SOURCES:.cpp=.o)
+
+include $(BASE_DIR)/make/common.mk
+

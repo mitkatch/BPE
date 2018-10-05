@@ -1,0 +1,32 @@
+# $Id: Makefile.tb,v 1.4 2006/04/01 12:11:56 nickz Exp $
+
+MODULE := canpx2tb 
+
+DEPENDS :=	\
+	LIBUTIL	\
+	LIBAPPS	\
+	LIBDBLDAPUTIL	\
+	LIBRMDS
+
+
+SOURCES := \
+	CanpxApp.cpp	\
+	CanpxOpenServer.cpp	\
+	CanpxHttpClient.cpp	\
+	CanpxContributor.cpp	\
+	CanpxInstrument.cpp	\
+	CanpxAlgorithm.cpp	\
+	CanpxEngineGOCImpl.cpp	\
+	CanpxEngineTBillImpl.cpp	\
+	CanpxEngineProvImpl.cpp	\
+	CanpxEngine.cpp		\
+	CompiledInstrument.cpp	\
+	CanpxTrade.cpp	\
+	ChainManager.cpp
+
+
+LIBRARIES = 
+OBJECTS := $(SOURCES:.cpp=.o)
+
+include $(BASE_DIR)/make/common.mk
+

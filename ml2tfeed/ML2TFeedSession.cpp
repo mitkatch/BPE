@@ -1,0 +1,839 @@
+
+/************************************************************************
+||
+|| DATE:                $Date: 2006/05/15 19:37:01 $
+|| SOURCE:              $Source: /export/home/tomcat/mlsrc/ml2tfeed/RCS/ML2TFeedSession.cpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: ML2TFeedSession.cpp,v 1.4 2006/05/15 19:37:01 mikhailt Exp $
+|| REVISION:    $Revision: 1.4 $
+|| LOG:                 $Log: ML2TFeedSession.cpp,v $
+|| LOG:                 Revision 1.4  2006/05/15 19:37:01  mikhailt
+|| LOG:                 RecoveryMgr added
+|| LOG:
+|| LOG:                 Revision 1.3  2006/05/12 15:58:17  mikhailt
+|| LOG:                 switch to BLOCKing mode
+|| LOG:
+|| LOG:                 Revision 1.2  2006/04/12 19:27:11  mikhailt
+|| LOG:                 commented output
+|| LOG:
+|| LOG:                 Revision 1.1  2006/04/07 19:31:50  mikhailt
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <stropts.h>
+#include <strings.h>
+#include <string.h>
+#include <errno.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+#include <set>
+#include <iomanip>
+#include <strstream>
+
+
+#include "ML2TFeedApp.hpp"
+#include "ConfigMap.hpp"
+#include "Logger.hpp"
+#include "ML2TFeedSession.hpp"
+#include "MessageFactory.hpp"
+#include "MsgParser.hpp"
+#include "DataCache.hpp"
+#include "Application.hpp"
+#include "Scheduler.hpp"
+#include "Datum.hpp"
+#include "DataPage.hpp"
+//#include "AnsiPage/Page.h"
+//#include "AnsiPage/PageCell.h"
+
+#define ML2T_STR	"ML2T"
+
+const char ML2TFeedSession::FEED_PAGE_IMAGE[]  	= "25";
+const char ML2TFeedSession::FEED_PAGE_UPDATE[]  	= "26";
+const char ML2TFeedSession::FEED_RESET[]  	= "27";
+const char ML2TFeedSession::FEED_HBNG[]  	= "28";
+const char ML2TFeedSession::FEED_HB[]  		= "29";
+const char ML2TFeedSession::SECURITY_ID_STR[]  		= "1";
+pthread_mutex_t _mutexLock;
+pthread_cond_t _waitCond;
+
+ML2TFeedSession::ML2TFeedSession(ML2TFeedApp *app, const string& name):
+			 _myApp(app), _name(name),
+			_publisher(NULL), 
+			m_nMsgID(0L), 
+			_need_reset(true),
+			_recoveryMgr(NULL)
+{ 
+	setRowID();
+	_recoveryMgr = new ML2TFeedSession::RecoveryMgr(this);
+
+};
+ML2TFeedSession::~ML2TFeedSession()
+{
+	//cout<<"Client deleting..."<<endl;
+	if (_publisher){
+		delete _publisher;
+		//cout<<"Publisher deleted..."<<endl;
+	}
+	if (_recoveryMgr)
+		delete _recoveryMgr;
+
+	removeIO(_myfd);
+}
+
+bool
+ML2TFeedSession::initSession()
+{
+
+	assert(_myApp);
+	_myApp->subscribeSources();
+
+	bool ret = false;
+	string host = ConfigMap::getConfig()->getValue("GATEWAY_IP");
+	string port = ConfigMap::getConfig()->getValue("GATEWAY_PORT");
+	this->setPort(port);
+	this->setHost(host);
+	conn_status = ML2TFeedSession::CONN_CLOSE;
+	if (this->initClient()){
+		conn_status = ML2TFeedSession::CONN_OPEN;
+		_myfd = this->myfd();
+		if (_publisher)
+			_publisher->setFd(_myfd);
+
+		newIO(_myfd, IOCallback::IO_READ, this);
+	
+		ret = true;
+		sendResetMsg(); 
+		_need_reset = false;
+		addTimer(1*1000, 1, this);//reset timer
+	}
+	return ret;
+}
+
+void
+ML2TFeedSession::recoverConnection(int status)
+{
+	if (status == ML2TFeedSession::CONN_CLOSE){
+		Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::recoverConnection Client recovering...");
+		if (_publisher){
+			//delete _publisher;
+			Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::recoverConnection Publisher recovering...");
+		}
+
+
+		if (this->initSession()==false){
+			_recoveryMgr->_status = conn_status;
+			_recoveryMgr->addTimer(5*1000, 1, _recoveryMgr);
+		}
+	}
+}
+
+void
+ML2TFeedSession::onRead(int fd, InputId id)
+{
+	if( fd == _myfd){
+		int ntoread = 0, nread;
+		int ntoread_new =0;
+		char *toBuf = NULL;
+		bool sucseed = false;
+		// for LINUX it's FIONREAD, for SUN it's I_NREAD
+		if((ioctl(_myfd, I_NREAD, &ntoread) == -1) || (ntoread == 0)){
+			Logger::getLogger()->log(Logger::TYPE_ERROR, "ML2TFeedSession %i closed connection", _myfd);
+			conn_status = ML2TFeedSession::CONN_CLOSE;
+			_recoveryMgr->_status = conn_status;
+			_recoveryMgr->addTimer(5*1000, 1, _recoveryMgr);
+			removeIO(_myfd);
+			return;
+		}
+
+
+		return; // we don't expect anything from the server 
+		//////////////////////////////////////////////////
+		/////////////////////////////////////////////////
+		/**************************
+		char *szBuffer = new char[ntoread + 1];
+		nread = read(_myfd, szBuffer, ntoread);
+
+		//cout << "onRead ["<<szBuffer<<"]"<<endl;
+
+		if (nread <= 0){
+			Logger::getLogger()->log(Logger::TYPE_ERROR, "ML2TFeedSession %i read failed", _myfd);
+			conn_status = ML2TFeedSession::CONN_CLOSE;
+			return ;
+		}	
+
+		string tmpmsg(szBuffer, ntoread);
+		_strBuffer += tmpmsg;
+		//int buffSize = _strBuffer.length();
+		int buffSize = _strBuffer.find_first_of(ML2TFeedSession::ETX);
+		if (buffSize != string::npos && _strBuffer.size() > (buffSize +1)){
+			buffSize += 1; //for CRC
+		}
+
+		while(buffSize > 0){
+			string msg(_strBuffer, buffSize);
+			MsgGraph msgGraph;
+			parseML2TMsg(msg, &msgGraph);
+			//MessageFactory::getFactory()->processMsg(url, httpImage , this);
+			//string strTemp = _strBuffer;
+			//_strBuffer = strTemp.substr(end+4, strTemp.length());	
+			
+		}
+		if (szBuffer)
+			delete [] szBuffer;	
+		******************************/
+	}		
+	
+}
+
+void
+ML2TFeedSession::parseML2TMsg(const string& msg, MsgGraph* msgGraph)
+{
+
+	string id, val;
+	string::size_type posRS, posUS;
+
+	string::size_type lastPos = 0;
+
+	while ( (posRS = msg.find(char(ML2TFeedSession::RS), lastPos)) != string::npos ){
+		posUS = msg.find(char(ML2TFeedSession::US), posRS);
+		if (posUS == string::npos)
+			break;
+
+		//field id
+		id = msg.substr(posRS + 1, posUS - posRS - 1);
+		lastPos = string::npos;
+		for( unsigned i = posUS;
+			lastPos == string::npos && i < msg.size();
+			i++){
+				if( msg[i] == char(ML2TFeedSession::GS) ||
+					msg[i] == char(ML2TFeedSession::RS) ||
+					msg[i] == char(ML2TFeedSession::FS)){
+						lastPos = i;
+				}
+		}	
+
+		val = msg.substr(posUS+1, lastPos - posUS - 1);
+
+		msgGraph->addGraphNode(ML2T_STR, 0, id, val);
+	}
+
+}
+
+void
+ML2TFeedSession::defaultMsgType(string& msgType, MsgGraph& msg)
+{
+	Logger::getLogger()->log(Logger::TYPE_ERROR, "Unknown msg type %s for msg", msgType.c_str());
+	panic(string("Unknown msg type ") + msgType);
+}
+
+/*****
+bool
+ML2TFeedSession::onParserRequest(MsgGraph &image, MsgProcessor *processor)
+{
+	ML2TFeedSession *client = (ML2TFeedSession *)processor;
+	if (client){
+		client->onRequest(image);
+	}
+	return true;
+}
+*****/
+
+void
+ML2TFeedSession::sendHBMsg(const string& type)
+{
+	/***** NO HB messages
+	string msg="";
+
+	//// ACTUAL MSG BEGINS
+	msg += char(ML2TFeedSession::US);
+	msg += type;
+	if (type == ML2TFeedSession::FEED_HBNG){
+		msg += char(ML2TFeedSession::RS);
+		msg += "8191";                          // interval
+		msg += char(ML2TFeedSession::US);
+		msg += "10";
+		msg += char(ML2TFeedSession::RS);
+		msg += "8190";
+		msg += char(ML2TFeedSession::US);
+		msg += "3";
+	}
+	publish( msg );
+	*****/
+}
+
+void
+ML2TFeedSession::sendResetMsg()
+{
+	ML2TMsg msg;
+
+	m_nMsgID = 0;
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(FEED_RESET);
+	msg.push_back(char(ML2TFeedSession::GS));
+
+	publish(msg);
+}
+
+void
+ML2TFeedSession::publishPageImage(DataPage *page, DataPage::PageSlot& slot, const string& sec_id)
+{
+
+	ML2TMsg msg;
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(ML2TFeedSession::FEED_PAGE_IMAGE);
+	msg.push_back(char(ML2TFeedSession::GS));
+	msg.push_back(char(ML2TFeedSession::RS));
+	msg.push_back(ML2TFeedSession::SECURITY_ID_STR);
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(sec_id);
+	for (int i = slot.row1; i <= slot.row2; i++){
+		msg.push_back(char(ML2TFeedSession::RS));
+		pair<string, string> rowID = getRowID(i+ 1 +1); //first row 0 vs 1 and skip first row (Reuters reqirement)
+		msg.push_back(rowID.first);
+		msg.push_back(char(ML2TFeedSession::US));
+		msg.push_back(page->rowAsPageRow(i)); //change to PageRow
+		msg.push_back(char(ML2TFeedSession::RS));
+		msg.push_back(rowID.second);
+		msg.push_back(char(ML2TFeedSession::US));
+		msg.push_back(buildVideo(page->rowAsPageRow(i), slot));//build and add video here
+	}
+	Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::publishPageImage [%s] Image Publishing [%s]", sec_id.c_str(), (page->address()).c_str());
+
+	this->publish(msg);
+
+}
+
+void 
+ML2TFeedSession::publishPageUpdate(DataPage::Update& up, const string& sec_id)
+{
+	ML2TMsg msg;
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(ML2TFeedSession::FEED_PAGE_UPDATE);
+	msg.push_back(char(ML2TFeedSession::GS));
+	msg.push_back(char(ML2TFeedSession::RS));
+	msg.push_back(ML2TFeedSession::SECURITY_ID_STR);
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(sec_id);
+	msg.push_back(char(ML2TFeedSession::RS));
+	pair<string, string> rowID = getRowID(up.row +1 +1); //skip first row
+	msg.push_back(rowID.first);
+	msg.push_back(char(ML2TFeedSession::US));
+	//build and add ESC`,column data
+		//strstream str;
+		//str << char(ML2TFeedSession::ESC) << '`' <<up.column +1<<','<<up.data; 
+	msg.push_back(char(ML2TFeedSession::ESC));
+	msg.push_back('`');
+	msg.push_back(up.column +1);
+	msg.push_back(',');
+	msg.push_back(up.data);
+		//msg.push_back(str.str()); str.freeze(false);
+	msg.push_back(char(ML2TFeedSession::RS));
+	msg.push_back(rowID.second);
+	msg.push_back(char(ML2TFeedSession::US));
+	msg.push_back(buildVideo(up));//build and add video here
+	Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::publishPageUpdate [%s] Update Publishing [%s]", sec_id.c_str(), up.data.c_str());
+
+	this->publish(msg);
+}
+
+void
+ML2TFeedSession::publish(const ML2TMsg& msg)
+{
+	if (_publisher == NULL){
+		_publisher = new FeedPublisher(this, _myfd);
+
+	}
+	_publisher->publish(msg);
+	m_nMsgID++;
+
+}
+
+
+char
+ML2TFeedSession::calculateCRC(const vector<char>& szMsg)
+{
+	char crc = 0;
+	
+	for (int i = 0; i < szMsg.size(); ++i) {
+		crc ^= szMsg[i];
+	}
+	
+	return crc;
+}
+
+unsigned char 
+ML2TFeedSession::toML2TVAttr(unsigned char v)
+{
+	unsigned char attr = 0x0;
+
+        if (v & DataPage::V_BLINK){
+                attr |= 1 << 5; //0x20
+        }
+
+        if (v & DataPage::V_NONE){
+                attr |= 1 << 2  ; //0x4;
+        }
+
+        if (v & DataPage::V_HIGHLIGHT){
+                attr |= 1 << 6; //0x40;
+        }
+
+        if (v & DataPage::V_UNDERLINE){
+                attr |= 1 << 4;//0x10;
+        }
+
+	if (attr == 0x0){
+                attr |= 1 << 2  ; //0x4;
+		cout <<(int)v;
+	}
+
+        return attr;
+
+
+}
+
+unsigned char 
+ML2TFeedSession::toML2TFg(unsigned char v)
+{
+
+	return 0x08; //green
+
+}
+
+unsigned char 
+ML2TFeedSession::toML2TBg(unsigned char v)
+{
+	return 0x01; //black
+
+}
+
+ML2TMsg
+ML2TFeedSession::buildVideo(DataPage::Update &up)
+{
+	ML2TMsg videoData;
+	int size = up.data.size(); // *2;
+	//wstring videoData = wstring(up.data.size() *2, '\0');
+
+	cout << "BuildVideo Update"<<endl;
+	unsigned char attr = toML2TVAttr(up.video);
+	unsigned char color = toML2TFg(up.fg) | toML2TBg(up.bg) << 4;
+
+	for (int i = 0; i < size; i++){
+		videoData.push_back(color);
+		videoData.push_back(attr);
+	}
+	cout << endl;
+
+	return videoData;
+}
+
+ML2TMsg
+ML2TFeedSession::buildVideo(DataPage::PageRow &row, DataPage::PageSlot& slot)
+{
+	ML2TMsg videoData;
+	int size = row.size();// * 2;
+	//wstring videoData = wstring(row.size() *2, '\0');
+	vector<DataPage::PageGliph>::iterator it2 = row.begin();
+	int i = 0;
+	cout << "BuildVideo PageRow"<<endl;
+	for(it2; it2!= row.end(); it2++, i++){
+		unsigned char attr = toML2TVAttr((*it2).video);
+		unsigned char color = toML2TFg((*it2).fg) | toML2TBg((*it2).bg) << 4;
+		videoData.push_back(color);
+		videoData.push_back(attr);
+		
+	}
+	cout << endl;
+	return videoData;
+}
+
+ML2TFeedSession::FeedPublisher::FeedPublisher (ML2TFeedSession *cl, int fd):_mySession(cl)
+{
+	pthread_mutex_init (&_mutexLock, NULL);
+	pthread_cond_init (&_waitCond, NULL);
+	setFd(fd);
+	pthread_t tid;
+	pthread_create(&tid, NULL, ML2TFeedSession::FeedPublisher::toWrite, this);
+}
+
+void
+ML2TFeedSession::FeedPublisher::setFd(int fd)
+{
+	//set off non-blocking
+	_myfd = fd;
+	
+	int flags = fcntl(_myfd, F_GETFL, 0);
+	flags &= ~O_NONBLOCK;
+	//flags &= ~O_NDELAY;
+	if (fcntl(_myfd, F_SETFL, flags) < 0){
+		Logger::getLogger()->log(Logger::TYPE_ERROR, "ML2TFeedSession::FeedPublisher F_SETFL  failed");
+	}
+	struct timeval tv;
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
+	setsockopt(_myfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+		
+
+}
+
+ML2TFeedSession::FeedPublisher::~FeedPublisher()
+{
+	pthread_mutex_destroy(&_mutexLock);
+	pthread_cond_destroy(&_waitCond);
+}
+
+void
+ML2TFeedSession::FeedPublisher::onWrite()
+{
+	//pthread_mutex_lock(&_mutexLock); already locked
+	int n = 0 , j = 0;
+	vector<ML2TMsg *>::iterator it = _publishStr.begin();
+	while(it != _publishStr.end()){	
+		ML2TMsg* msg = (*it);	
+		printMsg(msg->getMsg(), msg->size());
+		char *chMsg = msg->getMsg();
+		int msgSize = msg->size();
+		Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::FeedPublisher::onWrite sending msgID [%li], @[%s]", msg->msgID(), ML2TFeedSession::getUTime());
+		//int flags = fcntl(_myfd, F_GETFL, 0);
+		//if ((flags & O_NONBLOCK) == O_NONBLOCK)
+		//	cout << "it is O_NONBLOCK"<<endl;
+		n = send(_myfd, chMsg, msgSize, 0);
+		j++;
+		if (n  < 0){
+			Logger::getLogger()->log(Logger::TYPE_ERROR, "ML2TFeedSession::onWrite %s size[%i] failed", strerror(errno), msg->size());
+			break;
+		} else{
+			Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::FeedPublisher::onWrite sent size [%i] msgID [%li], @[%s]", n, msg->msgID(), ML2TFeedSession::getUTime());
+			if ( n != msgSize )	
+				Logger::getLogger()->log(Logger::TYPE_ERROR, "ML2TFeedSession::FeedPublisher::onWrite chunk sent %i ", n);
+			it = _publishStr.erase(it);
+			delete msg;
+		}
+	}
+	//pthread_mutex_unlock(&_mutexLock);
+	Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::FeedPublisher::onWrite sent %i msgs", j);
+}
+
+void
+ML2TFeedSession::FeedPublisher::printMsg(char *msg, int size)
+{
+	string filename = ConfigMap::getConfig()->getValue("CAPTURE_MSG");
+	if (filename.empty())
+		return;
+
+	FILE *m_stream = NULL;
+	if ((m_stream = fopen(filename.c_str(), "a+")) != NULL) {
+		fprintf(m_stream, "====== BEGIN =====\n");
+		for (int i = 0; i < size; i++){
+			if (isprint(msg[i]))
+				fprintf(m_stream, "%c", msg[i]);
+			else
+				fprintf(m_stream, "{%X}", msg[i]);
+			if (!(i%80))
+				fprintf(m_stream, "\n");
+
+		}
+		fprintf(m_stream, "\n====== END =====\n");
+		fflush(m_stream);
+		fclose(m_stream);
+
+	}
+}
+
+
+void
+ML2TFeedSession::FeedPublisher::publish(const ML2TMsg& pm)
+{
+	//str is the [US + MSG_TYPE value + GS + DATA]
+
+	char strtmp[12];
+	ML2TMsg msg;
+	msg.push_back(char(ML2TFeedSession::FS));
+	msg.push_back(char(ML2TFeedSession::RS));
+	msg.push_back(MSG_ID_STR);
+	msg.push_back(char(ML2TFeedSession::US));
+	sprintf(strtmp, "%li", _mySession->msgID()); 
+	msg.push_back(strtmp);
+	msg.push_back(char(ML2TFeedSession::RS));
+	msg.push_back(MSG_TYPE_STR);
+
+	msg.push_back(pm);
+	msg.push_back(char(ML2TFeedSession::FS));
+	msg.push_back(char(ML2TFeedSession::ETX));
+	char crc = ML2TFeedSession::calculateCRC(msg.getMsgAsVector());
+
+	unsigned msgSize = msg.size()
+					+ 1 /* CRC */ ;
+	sprintf(strtmp, "%c%06d", char(ML2TFeedSession::STX), msgSize);
+	
+	ML2TMsg *msg1 = new ML2TMsg;
+	//msg1->push_back(string(sstr.str()));
+	msg1->push_back(strtmp);
+	msg1->push_back(msg);
+
+	
+	msg1->push_back(crc);
+	//int len = msg1->size();
+	msg1->msgID(_mySession->msgID());
+	Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::FeedPublisher::publish @[%s] add ML2TMsg.size [%i], msgID [%li]", ML2TFeedSession::getUTime(), msg1->size(), msg1->msgID());
+
+	addMsg(msg1);
+
+
+	//newIO(_myfd, IOCallback::IO_WRITE, this);//need to be fixed to be called from theX
+	//pthread_t tid;
+	//pthread_create(&tid, NULL, ML2TFeedSession::FeedPublisher::toWrite, this);
+
+}
+
+void
+ML2TFeedSession::FeedPublisher::addMsg(ML2TMsg* msg)
+{
+	pthread_mutex_lock(&_mutexLock);
+	_publishStr.push_back(msg);
+	pthread_cond_signal(&_waitCond);
+	pthread_mutex_unlock(&_mutexLock);
+
+}
+
+//static
+void*
+ML2TFeedSession::FeedPublisher::toWrite(void *arg)
+{
+	//ML2TFeedSession::FeedPublisher *publisher = dynamic_cast<ML2TFeedSession::FeedPublisher *>(arg);	
+	ML2TFeedSession::FeedPublisher *publisher = (ML2TFeedSession::FeedPublisher *)arg;	
+	if (publisher){
+		for(;;){
+			pthread_cond_wait(&_waitCond, &_mutexLock);
+			publisher->onWrite();
+		}
+	}
+	return arg;
+}
+
+void
+ML2TFeedSession::panic(const string& msg)
+{
+	sendResetMsg();
+}
+
+void
+ML2TFeedSession::RecoveryMgr::onTimer(TimerId id)
+{
+	if (_status == ML2TFeedSession::CONN_CLOSE)
+		_session->recoverConnection(_status);
+}
+
+void
+ML2TFeedSession::onTimer(TimerId id)
+{
+	if (_need_reset){
+		sendResetMsg();
+	}
+	Scheduler scheduler;
+	if (scheduler.readCronLine(ConfigMap::getConfig()->getValue("SCHEDULER_RESET"))){
+		long next = scheduler.getSecondsToNext();
+		next = (next?next:86400); //24 hours
+		Logger::getLogger()->log(Logger::TYPE_INFO, "ML2TFeedSession::onTimer reset in [%li] sec", next);
+
+		addTimer(next*1000, 1, this);
+		_need_reset = true;
+	}
+
+}
+
+pair<string, string>
+ML2TFeedSession::getRowID(int r)
+{
+	pair<string, string> id;
+	if (r > 0 && r < 30){
+
+		id = _rowID[r];
+	} 
+	return id;
+
+}
+
+
+void
+ML2TFeedSession::setRowID()
+{
+	//pair<text_id, video_id>
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				1, 
+				pair<string, string>("1001", "2001"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				2, 
+				pair<string, string>("1002", "2002"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				3, 
+				pair<string, string>("1003", "2003"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				4, 
+				pair<string, string>("1004", "2004"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				5, 
+				pair<string, string>("1005", "2005"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				6, 
+				pair<string, string>("1006", "2006"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				7, 
+				pair<string, string>("1007", "2007"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				8, 
+				pair<string, string>("1008", "2008"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				9, 
+				pair<string, string>("1009", "2009"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				10, 
+				pair<string, string>("1010", "2010"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				11, 
+				pair<string, string>("1011", "2011"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				12, 
+				pair<string, string>("1012", "2012"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				13, 
+				pair<string, string>("1013", "2013"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				14, 
+				pair<string, string>("1014", "2014"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				15, 
+				pair<string, string>("1015", "2015"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				16, 
+				pair<string, string>("1016", "2016"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				17, 
+				pair<string, string>("1017", "2017"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				18, 
+				pair<string, string>("1018", "2018"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				19, 
+				pair<string, string>("1002", "2002"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				20, 
+				pair<string, string>("1003", "2003"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				21, 
+				pair<string, string>("1004", "2004"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				22, 
+				pair<string, string>("1005", "2005"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				23, 
+				pair<string, string>("1006", "2006"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				24, 
+				pair<string, string>("1007", "2007"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				25, 
+				pair<string, string>("1008", "2008"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				26, 
+				pair<string, string>("1009", "2009"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				27, 
+				pair<string, string>("1010", "2010"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				28, 
+				pair<string, string>("1011", "2011"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				29, 
+				pair<string, string>("1012", "2012"))); 
+
+	_rowID.insert(
+		map<int, pair<string, string> >::value_type(
+				30, 
+				pair<string, string>("1013", "2013"))); 
+
+
+}
+
+const char*
+ML2TFeedSession::getUTime()
+{
+	char t[56];
+	struct timeval tv;
+	struct timezone tz;
+	struct tm *tm;
+	gettimeofday(&tv, &tz);
+	tm = localtime(&tv.tv_sec);
+	sprintf(t, "%d:%02d:%02d.%d", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	return t;
+}

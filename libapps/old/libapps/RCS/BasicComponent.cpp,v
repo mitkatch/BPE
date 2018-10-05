@@ -1,0 +1,51 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#include "BasicComponent.hpp"
+#include <assert.h>
+#include <stdio.h>
+
+BasicComponent::BasicComponent ( const char *name )
+{
+	assert ( name != NULL );  
+	_name = strdup ( name );
+}
+
+BasicComponent::~BasicComponent()
+{
+	delete [] _name;
+}
+
+void BasicComponent::manage()
+{
+}
+
+void BasicComponent::unmanage()
+{
+}
+
+void
+BasicComponent::installDestroyHandler()
+{
+		
+}
+@

@@ -1,0 +1,51 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2005.11.17.21.57.58;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# $Id: Makefile,v 1.2 2004/11/15 17:40:09 mikhailt Exp $
+
+MODULE := espeedfeedII
+ 
+
+DEPENDS :=	\
+	CFETI	\
+	LIBUTIL	\
+	LIBAPPS	\
+	LIBMCMTRS	\
+	LIBDBLDAPUTIL
+
+
+
+SOURCES := \
+	ESHttpClient.cpp	\
+	ESOpenServer.cpp	\
+	ESpeedApp.cpp		\
+	ESCFETISession.cpp	\
+	ESCFETIProcessor.cpp	\
+	ESInstrument.cpp	\
+	AliasConverter.cpp
+
+LIBRARIES = 
+OBJECTS := $(SOURCES:.cpp=.o)
+
+include $(BASE_DIR)/make/common.mk
+
+@

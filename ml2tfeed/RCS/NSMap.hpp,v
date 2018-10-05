@@ -1,0 +1,41 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.1
+date	2006.04.07.19.31.50;	author mikhailt;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@
+#ifndef NSMAP_HPP
+#define NSMAP_HPP
+
+struct URLNameSpace {
+        string url;
+        string source;
+        string page;
+	string slot;
+	string security_id;
+};
+
+typedef map<string, URLNameSpace> NSMap;
+
+
+
+
+#endif //NSMAP_HPP
+@

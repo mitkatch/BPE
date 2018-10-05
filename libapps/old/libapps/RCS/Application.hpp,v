@@ -1,0 +1,275 @@
+head	1.6;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.6
+date	2006.03.28.21.15.07;	author mikhailt;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2005.01.10.16.12.24;	author mikhailt;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2004.07.30.16.16.06;	author mikhailt;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.04.29.19.52.56;	author mikhailt;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.01.09.21.33.58;	author tomcat;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.01.08.20.51.46;	author tomcat;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.6
+log
+@const char
+@
+text
+@/************************************************************************
+||
+|| DATE:                $Date: 2005/01/10 16:12:24 $
+|| SOURCE:              $Source: /export/home/mikhailt/work/mlsrc/libapps/RCS/Application.hpp,v $
+|| STATE:               $State: Exp $
+|| ID:                  $Id: Application.hpp,v 1.5 2005/01/10 16:12:24 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.5 $
+|| LOG:                 $Log: Application.hpp,v $
+|| LOG:                 Revision 1.5  2005/01/10 16:12:24  mikhailt
+|| LOG:                 send multicast
+|| LOG:
+|| LOG:                 Revision 1.4  2004/07/30 16:16:06  mikhailt
+|| LOG:                 sends correct heartbeats
+|| LOG:
+|| LOG:                 Revision 1.3  2004/04/29 19:52:56  mikhailt
+|| LOG:                 migration to SUNPRO
+|| LOG:
+|| LOG:                 Revision 1.2  2004/01/09 21:33:58  tomcat
+|| LOG:                 add TimerCallback
+|| LOG:
+|| LOG:                 Revision 1.1  2004/01/08 20:51:46  tomcat
+|| LOG:                 Initial revision
+|| LOG:
+************************************************************************/
+
+#ifndef APPLICATION_H
+#define APPLICATION_H
+#include <iostream.h>
+#include <stdexcept>
+#include <string>
+
+using std::string;
+
+#include "BasicComponent.hpp"
+#include "IOCallback.hpp"
+#include "TimerCallback.hpp"
+#include "UDPSession.hpp"
+
+//typedef XtIntervalId    TimerId;
+
+class ConfigMap;
+class DataFeed;
+class UDPSession;
+
+class Application : public IOCallback, public TimerCallback, public BasicComponent{
+    
+	// Allow main and to access protected member functions
+
+	friend int main ( int, char ** );
+
+	// private functions for registration
+
+	private:    
+		ConfigMap *_confmap;    
+		DataFeed *_myDataFeed;
+		UDPSession *_controlSession;	
+		UDPSession *_heartbeatSession;	
+	protected:
+    
+		// Support commonly needed data structures as a convenience
+    
+		XtAppContext _appContext;
+    
+		// Functions to handle Xt interface
+		virtual void initialize ( int , char ** );  
+		virtual void onInit(const ConfigMap& configMap);
+		virtual void getConfig(string&);
+		virtual void onConfig(ConfigMap *) {};
+		virtual void handleEvents();
+		virtual bool initControlSession(const ConfigMap& configMap);
+		virtual bool initHeartbeatSession(const ConfigMap& configMap);
+		virtual int initDaemon();
+
+		//Calbacks
+                // callback on IO event
+                //virtual void onRead(int fid){ };
+		//virtual void onWrite(int fid) { };
+		//virtual void onExcept(int fid){ };
+
+		virtual void appRemoveTimer ( TimerId timer);
+		static void regTimerCallback(XtPointer clientData, TimerId timer);
+
+		char   *_applicationClass;    // Class name of this application
+		string _commOpt; //command line options, see getopt()
+    
+	public:
+    
+		Application ( const char * );
+		virtual ~Application();     
+    
+		virtual void manage();
+		virtual void unmanage();
+    
+		// Convenient access functions
+    
+		XtAppContext  appContext()  { return _appContext; }
+		const char   *applicationClass()  { return _applicationClass; }
+    
+		virtual const char *const className() { return "Application"; }
+		virtual string getCommOpt() const { return _commOpt;}
+		virtual void setDataFeed(DataFeed * feed){
+			_myDataFeed = feed;
+		}
+
+		virtual DataFeed * getDataFeed(){
+			return _myDataFeed;
+		}
+	
+		virtual ConfigMap * getMyConfig(){
+			return _confmap;
+		}
+		
+		virtual UDPSession * getControlSession(){
+			return _controlSession;
+		}
+
+		static ConfigMap * configMap;
+};
+
+// Pointer to single global instance
+
+extern Application *theApplication; 
+
+#endif
+@
+
+
+1.5
+log
+@send multicast
+@
+text
+@d5 1
+a5 1
+|| DATE:                $Date: 2004/07/30 16:16:06 $
+d8 2
+a9 2
+|| ID:                  $Id: Application.hpp,v 1.4 2004/07/30 16:16:06 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.4 $
+d11 3
+d90 1
+a90 1
+		Application ( char * );
+@
+
+
+1.4
+log
+@sends correct heartbeats
+@
+text
+@d5 1
+a5 1
+|| DATE:                $Date: 2004/04/29 19:52:56 $
+d8 2
+a9 2
+|| ID:                  $Id: Application.hpp,v 1.3 2004/04/29 19:52:56 mikhailt Exp mikhailt $
+|| REVISION:    $Revision: 1.3 $
+d11 3
+d115 2
+@
+
+
+1.3
+log
+@migration to SUNPRO
+@
+text
+@d4 2
+a5 2
+|| DATE:                $Date: 2004/01/09 21:33:58 $
+d8 2
+a9 2
+|| ID:                  $Id: Application.hpp,v 1.2 2004/01/09 21:33:58 tomcat Exp mikhailt $
+|| REVISION:    $Revision: 1.2 $
+d11 3
+d33 1
+d35 1
+a35 2
+
+typedef XtIntervalId    TimerId;
+d39 1
+d52 2
+d66 4
+a69 1
+    
+d108 4
+@
+
+
+1.2
+log
+@add TimerCallback
+@
+text
+@d5 2
+a6 2
+|| DATE:                $Date: 2004/01/08 20:51:46 $
+|| SOURCE:              $Source: /export/home/tomcat/mlsrc/libapps/RCS/Application.hpp,v $
+d8 2
+a9 2
+|| ID:                  $Id: Application.hpp,v 1.1 2004/01/08 20:51:46 tomcat Exp tomcat $
+|| REVISION:    $Revision: 1.1 $
+d11 3
+d23 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 10
+a13 7
+|| DATE:                $Date$
+|| SOURCE:              $Source$
+|| STATE:               $State$
+|| ID:                  $Id$
+|| REVISION:    $Revision$
+|| LOG:                 $Log$
+d23 1
+a23 1
+//#include "TimerCallback.hpp"
+d31 1
+a31 1
+class Application : public IOCallback, /*public TimerCallback,*/ public BasicComponent{
+@
